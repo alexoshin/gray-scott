@@ -1,0 +1,121 @@
+:root {
+    --bg-color-1: #1f2224;
+    --bg-color-2: #1e3130;
+    --bg-color-3: #2e5c70;
+    --text-color-1: #ffffff;
+    --text-highlight-1: #aad4cd;
+    --text-highlight-2: #5da8ab;
+}
+
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: var(--bg-color-3);
+    opacity: 0;
+    transition: opacity 2s ease;
+}
+
+a {
+    text-decoration: none;
+}
+
+.highlight {
+    color: var(--text-highlight-1);
+}
+
+.header {
+    top: 0;
+    /* position: fixed; */
+    background: var(--bg-color-1);
+    width: 100%;
+    height: 80px;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1;
+}
+
+.header_left {
+    display: grid;
+    grid-gap: 50px;
+    margin-left: 30px;
+    box-sizing: border-box;
+    grid-template-columns: repeat(1, max-content);
+}
+
+.header_right {
+    display: grid;
+    height: 100%;
+    align-items: center;
+    grid-gap: 25px;
+    margin-right: 30px;
+    box-sizing: border-box;
+    grid-template-columns: repeat(4, max-content);
+}
+
+.header_text {
+    color: var(--text-color-1);
+    font-size: 2rem;
+    text-align: center;
+    white-space: nowrap;
+    font-family: 'Lato', sans-serif;
+}
+
+.icon {
+    color: var(--text-color-1);
+    transition: color 0.5s ease;
+}
+
+.icon:hover {
+    color: var(--text-highlight-2);
+}
+
+.title {
+    display: flex;
+    width: 100%;
+    /* height: 100%; */
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.card {
+    overflow: hidden;
+    width: 35%;
+    /* height: 50%; */
+    margin-top: 30px;
+    min-width: 500px;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 15px;
+    border-style: solid;
+    border-color: #000000;
+    border-width: 2px;
+    position: relative;
+    /* opacity: 0; */
+    /* transition: opacity 2s ease; */
+}
+
+.instructions-section {
+    width: 50%;
+    max-width: 400px;
+}
+
+.instructions {
+    color: white;
+    outline-color: black;
+    outline-width: 1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 20px;
+    margin: 20px;
+}
