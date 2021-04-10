@@ -11,28 +11,38 @@ window.addEventListener('load', onload);
 function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
     var vars = {};
 
-    canvas.width = Math.max(window.innerWidth / 2, window.innerHeight);
+    var candidate_size = Math.max(window.innerWidth / 2, window.innerHeight);
+    const cellSize = Math.round(candidate_size / gridWidth);
+    canvas.width = cellSize * gridWidth;
     canvas.height = canvas.width;
+
     const ctx = canvas.getContext('2d');
 
     const colorBlack = 'rgb(0, 0, 0)';
     const colorWhite = 'rgb(255, 255, 255)';
     const colorGray = 'rgb(128, 128, 128)';
 
-    const cellWidth = canvas.width / gridWidth;
-    const cellHeight = canvas.height / gridHeight;
     var u = [];
     var v = [];
 
     var interval = 0;
     var show_u = true;
+    var sim_time = 0;
+    const draw_every = 5;
 
+    // Sim parameters
     const dt = 2.5;
     const h = 1.0;
+    const rand_range = 10;
+    const max_noise = 0.2;
 
+    // Reaction parameters
+    var k = 0.0625;
+    var f = 0.035;
+
+    // Diffusion parameters
     const r_u = 0.082;
     const r_v = 0.041;
-
     const alpha_u = r_u * dt / (h * h);
     const alpha_v = r_v * dt / (h * h);
 
@@ -42,10 +52,20 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
             u[y] = [];
             v[y] = [];
             for (var x = 1; x < gridWidth + 1; x++) {
-                u[y][x] = Math.random();
-                v[y][x] = Math.random();
+                u[y][x] = 1.0;
+                v[y][x] = 0.0;
             }
         }
+
+        const centerY = gridHeight / 2;
+        const centerX = gridWidth / 2;
+        for (var y = centerY - rand_range; y < centerY + rand_range + 1; y++) {
+            for (var x = centerX - rand_range; x < centerX + rand_range + 1; x++) {
+                u[y][x] = 0.5 + Math.random() * max_noise - max_noise / 2;
+                v[y][x] = 0.25 + Math.random() * max_noise - max_noise / 2;
+            }
+        }
+
         fill_boundary();
     }
 
@@ -76,7 +96,7 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
 
     // Start the sim
     vars.start = function() {
-        interval = window.setInterval(loop, 75);
+        interval = window.setInterval(loop, 10);
     }
 
     // Stop the sim
@@ -88,7 +108,11 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
     // Main sim loop
     function loop() {
         advance_sim();
-        draw();
+
+        sim_time += 1;
+        if (sim_time % draw_every == 0) {
+            draw();
+        }
     }
 
     // Advance the reaction-diffusion sim one step
@@ -121,7 +145,13 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
     }
 
     function reaction() {
-
+        for (var y = 1; y < gridHeight + 1; y++) {
+            for (var x = 1; x < gridWidth + 1; x++) {
+                const uvv = u[y][x] * v[y][x] * v[y][x];
+                u[y][x] = u[y][x] + (f * (1 - u[y][x]) - uvv) * dt;
+                v[y][x] = v[y][x] + (-(f + k) * v[y][x] + uvv) * dt;
+            }
+        }
     }
 
     // Draw the current state to the canvas
@@ -142,11 +172,14 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
 
         for (var y = 1; y < gridHeight + 1; y++) {
             for (var x = 1; x < gridWidth + 1; x++) {
-                var intensity = (c[y][x] - min) / range * 255.0;
+                const intensity = ((c[y][x] - min) / range) * 255.0;
                 ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                ctx.fillRect((x - 1) * cellSize, (y - 1) * cellSize, cellSize, cellSize);
             }
         }
+
+        ctx.strokeStyle = colorGray;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
     }
 
     // Get the min and max value of a given concentration array
