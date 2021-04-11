@@ -254,16 +254,20 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
             type = 'spots';
             k = 0.0625;
             f = 0.035;
+            vars.initialize_grids();
         } else if (event.code == 'Digit2') {
             type = 'stripes';
             k = 0.06;
             f = 0.035;
+            vars.initialize_grids();
         } else if (event.code == 'Digit3') {
             type = 'waves';
             k = 0.0475;
             f = 0.0118;
+            vars.initialize_grids();
         } else if (event.code == 'Digit4') {
             type = 'varying';
+            vars.initialize_grids();
         }
     }
 
