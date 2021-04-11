@@ -4,7 +4,13 @@ function onload() {
     rd = setup_reaction_diffusion(document.getElementById('canvas'), 200, 200);
     rd.start();
     var instructions = document.getElementById('instructions');
-    instructions.innerText = '----- Key commands -----\n';
+    instructions.innerText = '----- Key commands -----\n'
+        + '1: change pattern - spots\n'
+        + '2: change pattern - stripes\n'
+        + '3: change pattern - waves\n'
+        + '4: change pattern - varying\n'
+        + 'r: reset simulation\n'
+        + 'p: pause/unpause';
 }
 window.addEventListener('load', onload);
 
@@ -27,13 +33,13 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
 
     var interval = 0;
     var show_u = true;
+    var type = 'spots';
     var sim_time = 0;
-    const draw_every = 5;
+    const draw_every = 10;
 
     // Sim parameters
     const dt = 2.5;
     const h = 1.0;
-    const rand_range = 10;
     const max_noise = 0.2;
 
     // Reaction parameters
@@ -46,23 +52,44 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
     const alpha_u = r_u * dt / (h * h);
     const alpha_v = r_v * dt / (h * h);
 
+    var k_grid = [];
+    var f_grid = [];
+    const k_min = 0.03;
+    const k_max = 0.07;
+    const f_min = 0.0;
+    const f_max = 0.08;
+    const k_range = k_max - k_min;
+    const f_range = f_max - f_min;
+    for (var y = 1; y < gridHeight + 1; y++) {
+        k_grid[y] = [];
+        f_grid[y] = [];
+        const f_val = f_max - ((y - 1) / (gridHeight - 1)) * f_range;
+        for (var x = 1; x < gridWidth + 1; x++) {
+            const k_val = k_min + ((x - 1) / (gridWidth - 1)) * k_range;
+            k_grid[y][x] = k_val;
+            f_grid[y][x] = f_val;
+        }
+    }
+
     // Initialize the concentration grids with random concentrations
     vars.initialize_grids = function() {
+        var prob;
+        if (type == 'waves') {
+            prob = 0.1;
+        } else {
+            prob = 0.5;
+        }
         for (var y = 1; y < gridHeight + 1; y++) {
             u[y] = [];
             v[y] = [];
             for (var x = 1; x < gridWidth + 1; x++) {
-                u[y][x] = 1.0;
-                v[y][x] = 0.0;
-            }
-        }
-
-        const centerY = gridHeight / 2;
-        const centerX = gridWidth / 2;
-        for (var y = centerY - rand_range; y < centerY + rand_range + 1; y++) {
-            for (var x = centerX - rand_range; x < centerX + rand_range + 1; x++) {
-                u[y][x] = 0.5 + Math.random() * max_noise - max_noise / 2;
-                v[y][x] = 0.25 + Math.random() * max_noise - max_noise / 2;
+                if (Math.random() < prob) {
+                    u[y][x] = 0.5 + Math.random() * max_noise - max_noise / 2;
+                    v[y][x] = 0.25 + Math.random() * max_noise - max_noise / 2;
+                } else {
+                    u[y][x] = 1.0;
+                    v[y][x] = 0.0;
+                }
             }
         }
 
@@ -96,7 +123,7 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
 
     // Start the sim
     vars.start = function() {
-        interval = window.setInterval(loop, 10);
+        interval = window.setInterval(loop, 5);
     }
 
     // Stop the sim
@@ -145,11 +172,21 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
     }
 
     function reaction() {
-        for (var y = 1; y < gridHeight + 1; y++) {
-            for (var x = 1; x < gridWidth + 1; x++) {
-                const uvv = u[y][x] * v[y][x] * v[y][x];
-                u[y][x] = u[y][x] + (f * (1 - u[y][x]) - uvv) * dt;
-                v[y][x] = v[y][x] + (-(f + k) * v[y][x] + uvv) * dt;
+        if (type == 'varying') {
+            for (var y = 1; y < gridHeight + 1; y++) {
+                for (var x = 1; x < gridWidth + 1; x++) {
+                    const uvv = u[y][x] * v[y][x] * v[y][x];
+                    u[y][x] = u[y][x] + (f_grid[y][x] * (1 - u[y][x]) - uvv) * dt;
+                    v[y][x] = v[y][x] + (-(f_grid[y][x] + k_grid[y][x]) * v[y][x] + uvv) * dt;
+                }
+            }
+        } else {
+            for (var y = 1; y < gridHeight + 1; y++) {
+                for (var x = 1; x < gridWidth + 1; x++) {
+                    const uvv = u[y][x] * v[y][x] * v[y][x];
+                    u[y][x] = u[y][x] + (f * (1 - u[y][x]) - uvv) * dt;
+                    v[y][x] = v[y][x] + (-(f + k) * v[y][x] + uvv) * dt;
+                }
             }
         }
     }
@@ -203,6 +240,34 @@ function setup_reaction_diffusion(canvas, gridWidth, gridHeight) {
 
         return [min, max];
     }
+
+    function keypress(event) {
+        if (event.code == 'KeyR') {
+            vars.initialize_grids();
+        } else if (event.code == 'KeyP') {
+            if (interval != 0) {
+                vars.stop();
+            } else {
+                vars.start();
+            }
+        } else if (event.code == 'Digit1') {
+            type = 'spots';
+            k = 0.0625;
+            f = 0.035;
+        } else if (event.code == 'Digit2') {
+            type = 'stripes';
+            k = 0.06;
+            f = 0.035;
+        } else if (event.code == 'Digit3') {
+            type = 'waves';
+            k = 0.0475;
+            f = 0.0118;
+        } else if (event.code == 'Digit4') {
+            type = 'varying';
+        }
+    }
+
+    window.addEventListener('keypress', keypress);
 
     vars.initialize_grids();
     return vars;
