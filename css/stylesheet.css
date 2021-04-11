@@ -119,3 +119,51 @@ a {
     font-size: 20px;
     margin: 20px;
 }
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    color: white;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dashed white;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    background-color: var(--bg-color-1);
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    position: absolute;
+    bottom: 150%;
+    left: 50%;
+    width: 200px;
+    margin-left: -110px;  /* Half of width plus padding */
+    z-index: 1;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+}
+
+/* Use an arrow to make tooltip look like a speech bubble. */
+.tooltip .tooltip-text::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: var(--bg-color-1) transparent transparent transparent;
+}
